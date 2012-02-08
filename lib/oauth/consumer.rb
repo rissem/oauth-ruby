@@ -192,6 +192,7 @@ module OAuth
     # Creates a request and parses the result as url_encoded. This is used internally for the RequestToken and AccessToken requests.
     def token_request(http_method, path, token = nil, request_options = {}, *arguments)
       response = request(http_method, path, token, request_options, *arguments)
+      
       case response.code.to_i
 
       when (200..299)
@@ -213,6 +214,8 @@ module OAuth
         response.error! if uri.path == path # careful of those infinite redirects
         self.token_request(http_method, uri.path, token, request_options, arguments)
       when (400..499)
+        Rails.logger.warn "REQUEST INFO: #{http_method}, #{path}, #{token}, #{request_options}"
+        Rails.logger.warn "RESPONSE INFO: #{response.inspect} #{response.body}"
         raise OAuth::Unauthorized, response
       else
         response.error!
